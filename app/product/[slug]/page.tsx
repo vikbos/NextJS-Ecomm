@@ -6,9 +6,8 @@ import { formatPrice, sleep } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next'
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }):Promise<Metadata> {
     const { slug } = await params
@@ -96,12 +95,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
                         <Separator className="my-4" />
 
-                        <div>
-                            <Button disabled={product.inventory === 0} className="w-full flex justify-center items-center">
-                                <ShoppingCart className="mr-1 w-4 h-4" />
-                                {product.inventory > 0 ? 'Add to Cart' : 'Out of stock'}
-                            </Button>
-                        </div>
+                        <AddToCartButton product={product} />
                     </div>
                 </CardContent>
             </Card>
