@@ -3,9 +3,16 @@
 import { cookies } from "next/headers"
 import { getCart } from "./actions"
 import { prisma } from "./prisma"
-import { createCheckoutSession } from "./stripe"
+import { createCheckoutSession, OrderWithItemsAndProduct } from "./stripe"
 
-export async function processCheckout() {
+export type ProcessCheckoutResponse = {
+    sessionUrl: string;
+    order: OrderWithItemsAndProduct
+};
+
+// TODO: fix a bug where making orders with clothing items fails
+
+export async function processCheckout(): Promise<ProcessCheckoutResponse> {
     const cart = await getCart()
 
     if (!cart || cart.items.length === 0) {
@@ -74,7 +81,7 @@ export async function processCheckout() {
         //3.create stripe session
         const { sessionId, sessionUrl } = await createCheckoutSession(fullOrder);
         //4. return the session url and handle the errors
-        if (!sessionId || sessionUrl) {
+        if (!sessionId || !sessionUrl) {
             throw new Error("Failed to create stripe session")
         }
         //5. store sessionId in the Order & change the Order status
@@ -84,13 +91,16 @@ export async function processCheckout() {
             },
             data: {
                 stripeSessionId: sessionId,
-                status: "pending",
+                status: "pending_payment",
             }
         });
 
         (await cookies()).delete("cartId")
 
-        return order
+        return {
+            sessionUrl,
+            order: fullOrder,
+        }
     } catch (e) {
         if (orderId && e instanceof Error && e.message.includes("Stripe")) {
             await prisma.order.update({
@@ -102,7 +112,7 @@ export async function processCheckout() {
                 }
             });
         }
-        console.error("Error creating order:", e)
+        console.log("Error creating order:", e)
         throw new Error("Failed to create order")
     }
 }
