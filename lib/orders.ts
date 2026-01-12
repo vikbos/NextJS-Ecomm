@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { getCart } from "./actions"
 import { prisma } from "./prisma"
 import { createCheckoutSession, OrderWithItemsAndProduct } from "./stripe"
+import { auth } from "./auth"
 
 export type ProcessCheckoutResponse = {
     sessionUrl: string;
@@ -14,6 +15,8 @@ export type ProcessCheckoutResponse = {
 
 export async function processCheckout(): Promise<ProcessCheckoutResponse> {
     const cart = await getCart()
+    const session = await auth()
+    const userId = session?.user?.id
 
     if (!cart || cart.items.length === 0) {
         throw new Error("Cart is empty")
@@ -22,7 +25,7 @@ export async function processCheckout(): Promise<ProcessCheckoutResponse> {
     let orderId: string | null = null;
 
     try {
-        // using transaction means everything or nothing is going to happen -> no partial result
+        // using $transaction means everything or nothing is going to happen -> no partial result
         // in transaction we access models not via prisma.<model> but via it's cb param
         const order = await prisma.$transaction(async (tx) => {
             const total = cart.subtotal
@@ -30,6 +33,7 @@ export async function processCheckout(): Promise<ProcessCheckoutResponse> {
             const newOrder = await tx.order.create({
                 data: {
                     total,
+                    userId: userId || null
                 }
             })
 

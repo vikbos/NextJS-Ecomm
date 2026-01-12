@@ -3,50 +3,45 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { LoginSchema, LoginSchemaType } from "@/lib/schemas";
+import { RegisterSchema, RegisterSchemaType } from "@/lib/schemas";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { registerUser } from "@/lib/actions/auth";
 
-export default function SignInPage() {
+
+export default function SignUpPage() {
     const [error, setError] = useState<string | null>()
-    const { update: updateSession } = useSession()
-    const form = useForm<LoginSchemaType>({
-        resolver: zodResolver(LoginSchema),
+    const router = useRouter()
+    const form = useForm<RegisterSchemaType>({
+        resolver: zodResolver(RegisterSchema),
         defaultValues: {
+            name: "",
             email: "",
             password: "",
+            confirmPassword: "",
         }
     })
-    const router = useRouter()
 
-    const onSubmit = async (data: LoginSchemaType) => {
+    const onSubmit = async (data: RegisterSchemaType) => {
         setError(null)
-        // signIn method hits "/api/auth/signin/credentials" url -> proxy.ts runs ->
-        // api/auth/[...nextauth]/route.ts runs -> auth.ts runs
+        form.clearErrors()
+
         try {
-            const result = await signIn("credentials", {
-                email: data.email,
-                password: data.password,
-                redirect: false,
-            })
-            if (result?.error) {
-                if (result.error === "CredentialsSignin") {
-                    setError("Invalid email or password")
-                } else {
-                    setError("An error occurred while signing in")
-                }
-            } else {
-                await updateSession()
-                router.push("/")
+            const result = await registerUser(data)
+
+            if (!result?.success) {
+                setError(result?.error || "An error occurred while creating your account")
+                return
             }
+
+            router.push("/auth/signin")
         } catch (e) {
-            console.error("Sign in error:", e)
-            setError("an error occurred when signing in")
+            console.error("Registration Error", e)
+            setError("An error occurred while creating your account")
         }
     }
 
@@ -54,14 +49,14 @@ export default function SignInPage() {
         <main className="flex min-h-screen flex-col items-center justify-center p-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle>Sign In to your account</CardTitle>
+                    <CardTitle>Create an account</CardTitle>
                     <CardDescription>
                         Or{" "}
                         <Link 
-                            href="/auth/signup" 
+                            href="/auth/signin" 
                             className="font-medium text-primary hover:underline"
                         >
-                            create an account
+                            sign in instead
                         </Link>
                     </CardDescription>
                 </CardHeader>
@@ -71,6 +66,19 @@ export default function SignInPage() {
                     )}
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -97,15 +105,25 @@ export default function SignInPage() {
                                     </FormItem>
                                 )}
                             />
-                            {/* {session?.user && (
-                                <pre>{JSON.stringify(data, null, 2)}</pre>
-                            )} */}
+                            <FormField
+                                control={form.control}
+                                name="confirmPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Confirm Password</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" placeholder="Confirm Password" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <Button 
                                 type="submit" 
                                 className="w-full"
                                 disabled={form.formState.isSubmitting}
                             >
-                                Sign In
+                                Sign Up
                             </Button>
                         </form>
                     </Form>

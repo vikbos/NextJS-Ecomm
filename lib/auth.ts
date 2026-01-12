@@ -42,7 +42,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     return null
                 }
 
-                return user
+                // return user
+                return {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  role: user.role,
+                }
             } catch (e) {
                 console.error("Error finding user:", e)
                 return null
@@ -50,6 +56,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
     })
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    // TODO: Fix TS errors
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+      }
+      return session;
+    },
+  }
 });
 
 export async function hashPassword(password: string) {
