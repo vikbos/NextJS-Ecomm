@@ -2,7 +2,6 @@ import OrderStatusBadge from "@/components/order-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { OrderWithItemsAndProduct } from "@/lib/stripe";
 import { formatPrice } from "@/lib/utils";
-import { AlertCircle, CheckCircle, Clock, CreditCard } from "lucide-react";
 
 interface OrderSummaryProps {
     order: OrderWithItemsAndProduct;

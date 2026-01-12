@@ -39,13 +39,15 @@ export default function CartEntry({ cartItem }: CartEntryProps) {
                 </div>
 
                 <div className="overflow-hidden rounded-md border border-muted w-16 h-16">
-                    <Image
-                        className="h-full w-full object-cover"
-                        width={128}
-                        height={128}
-                        src={cartItem.product.image}
-                        alt={cartItem.product.name}
-                    />
+                    {cartItem.product.image && (
+                        <Image
+                            className="h-full w-full object-cover"
+                            width={128}
+                            height={128}
+                            src={cartItem.product.image}
+                            alt={cartItem.product.name}
+                        />
+                    )}
                 </div>
                 <div className="flex flex-col">
                     <div className="font-medium">{cartItem.product.name}</div>

@@ -11,6 +11,31 @@ type CategoryPageProps = {
     searchParams: Promise<{sort?: string}>
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params
+
+    const category = await prisma.category.findUnique({
+        where: {
+            slug,
+        },
+        select: {
+            name: true,
+            slug: true,
+        }
+    })
+
+    if (!category) {
+        return {}
+    }
+
+    return {
+        title: category.name,
+        openGraph: {
+            title: category.name,
+        },
+    }
+}
+
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
     const { slug } = await params;
     const { sort } = await searchParams;

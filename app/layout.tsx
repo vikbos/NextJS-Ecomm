@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { SessionProvider } from "next-auth/react";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "E-Commerce Store",
   description: "A simple e-commerce store built with Next.js",
+  openGraph: {
+    title: "E-Commerce Store",
+    description: "A simple e-commerce store built with Next.js",
+    siteName: "E-Commerce Store",
+    url: process.env.NEXT_PUBLIC_URL
+  }
 };
+
+// TODO: implement global error boundary
 
 export default function RootLayout({
   children,
@@ -26,29 +35,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <header>
-              <Navbar />
-            </header>
-            {children}
-            <footer className="border-t border-dashed py-6"> 
-              <div className="container mx-auto text-sm text-center text-muted-foreground">
-                &copy; {new Date().getFullYear()} NextJS Ecomm. All rights reserved.
-              </div>
-            </footer>
-          </ThemeProvider>
-        </SessionProvider>
-      </body>
-    </html>
+    <Suspense>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <SessionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <header>
+                <Navbar />
+              </header>
+              {children}
+              <footer className="border-t border-dashed py-6"> 
+                <div className="container mx-auto text-sm text-center text-muted-foreground">
+                  &copy; {new Date().getFullYear()} NextJS Ecomm. All rights reserved.
+                </div>
+              </footer>
+            </ThemeProvider>
+          </SessionProvider>
+        </body>
+      </html>
+    </Suspense>
   );
 }

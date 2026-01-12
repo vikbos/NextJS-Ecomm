@@ -2,12 +2,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getProductBySlug } from "@/lib/actions";
-import { formatPrice, sleep } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next'
 import Image from "next/image";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }):Promise<Metadata> {
     const { slug } = await params
@@ -36,13 +37,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         notFound()
     }
 
+    const jsonLd = {
+        "@context": "https://schema.org/",
+        "@type:": "Product",
+        name: product.name,
+        image: product.image,
+        description: product.description,
+        offers: {
+            "@type": "Offer",
+            price: product.price,
+            priceCurrency: "USD",
+            availability: product.inventory > 0 ? "InStock" : "OutOfStock",
+        }
+    }
+
     const breadcrumbs = [
         { label: 'Products', href: '/' },
         { label: product.category?.name, href: `/search/${product.category?.slug}` },
         { label: product.name, href: `/product/${product.slug}`, active: true },
     ];
-
-    await sleep(1000)
 
     return (
         <main className="container mx-auto py-4">
@@ -99,6 +112,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     </div>
                 </CardContent>
             </Card>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
         </main>
     )
 }
