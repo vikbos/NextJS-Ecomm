@@ -1,0 +1,14 @@
+import { getCart } from "@/lib/actions";
+import { NextResponse } from "next/server";
+
+export async function GET() {
+    try {
+        const cart = await getCart()
+        return NextResponse.json({
+            itemCount: cart?.size || 0
+        })
+    } catch (e) {
+        console.log(e)
+        return NextResponse.json({ itemCOunt: 0 }, { status: 500 })
+    }
+}

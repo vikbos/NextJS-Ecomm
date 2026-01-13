@@ -29,6 +29,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 }
 
+// if using any dynamic apis like cookies, headers or searchparams anywhere in the page or the parent layout of the page
+// the page cannot be statically generated
+export const revalidate = 15;
+
+// generateStaticParams -> tells NextJS what are all the possible params to generate the page
+export async function generateStaticParams() {
+    const products = await prisma.product.findMany({
+        select: {
+            slug: true,
+        }
+    })
+    return products.map((product) => ({
+        slug: product.slug
+    }))
+}
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
     const product = await getProductBySlug(slug);

@@ -5,14 +5,17 @@ import { Button } from "./ui/button";
 import { useTransition } from "react";
 import { addToCart } from "@/lib/actions";
 import { Product } from "@/generated/prisma/client";
+import { useCart } from "@/lib/use-cart";
 
 export function AddToCartButton({ product }: { product: Product }) {
     const [isPending, startTransition] = useTransition()
+    const { revalidateCart } = useCart()
 
     const handleAddToCart = () => {
         startTransition(async () => {
             try {
                 await addToCart(product.id, 1)
+                revalidateCart()
             } catch (e) {
                 console.error('Failed to add to cart', e)
             }

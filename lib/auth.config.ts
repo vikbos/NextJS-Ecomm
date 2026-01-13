@@ -20,4 +20,5 @@ export const authConfig = {
     },
   },
   providers: [], // Leave empty - we add database-heavy providers in auth.ts
+  trustHost: true,
 } satisfies NextAuthConfig;
