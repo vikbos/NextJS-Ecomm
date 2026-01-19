@@ -1,3 +1,4 @@
+// file runs only when -> stripe listen --forward-to http://localhost:3000/webhooks/stripe
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";

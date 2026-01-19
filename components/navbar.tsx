@@ -4,14 +4,11 @@ import { MobileNav } from "./mobile-nav";
 import { SearchInput } from "./search-input";
 import { CartIndicator } from "./cart-indicator";
 import AuthStatus from "./auth-status";
+import { getCachedCategories } from "@/lib/actions";
 
-export const categories = [
-    { id: 1, name: "Electronics", href: "/search/electronics" },
-    { id: 2, name: "Clothing", href: "/search/clothing" },
-    { id: 3, name: "Home", href: "/search/home" },
-]
+export async function Navbar() {
+    const categories = await getCachedCategories()
 
-export function Navbar() {
     return (
         <div className="border-b">
             <div className="container mx-auto flex h-16 items-center justify-between">
@@ -24,14 +21,14 @@ export function Navbar() {
                             {categories.map((category) => (
                                 <Link
                                     key={category.id}
-                                    href={category.href}
+                                    href={`/search/${category.slug}`}
                                     className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                                 >
                                     {category.name}
                                 </Link>
                             ))}
                         </nav>
-                        <MobileNav />
+                        <MobileNav categories={categories} />
                     </div>
                 </div>
 

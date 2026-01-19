@@ -11,8 +11,6 @@ export type ProcessCheckoutResponse = {
     order: OrderWithItemsAndProduct
 };
 
-// TODO: fix a bug where making orders with clothing items fails
-
 export async function processCheckout(): Promise<ProcessCheckoutResponse> {
     const cart = await getCart()
     const session = await auth()
@@ -26,7 +24,7 @@ export async function processCheckout(): Promise<ProcessCheckoutResponse> {
 
     try {
         // using $transaction means everything or nothing is going to happen -> no partial result
-        // in transaction we access models not via prisma.<model> but via it's cb param
+        // in $transaction we access models not via prisma.<model> but via it's cb param
         const order = await prisma.$transaction(async (tx) => {
             const total = cart.subtotal
 
@@ -79,6 +77,7 @@ export async function processCheckout(): Promise<ProcessCheckoutResponse> {
             }
         });
         //2. confirm the order was loaded
+        console.log("fullOrder:", fullOrder)
         if (!fullOrder) {
             throw new Error("Order not found")
         }

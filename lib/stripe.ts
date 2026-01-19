@@ -34,7 +34,7 @@ export async function createCheckoutSession(order: OrderWithItemsAndProduct) {
                 description: item.product.description ?? "",
                 images: [item.product.image ?? ""],
             },
-            unit_amount: item.product.price * 100,
+            unit_amount: Math.round(item.product.price * 100),
             },
             quantity: item.quantity,
         };

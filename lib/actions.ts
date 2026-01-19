@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "./prisma";
 import { cookies } from "next/headers";
 import { revalidateTag, unstable_cache } from "next/cache";
+import { createProductsCacheKey, createProductsTags } from "./cache-keys";
 
 export interface GetProductParams {
   query?: string;
@@ -44,6 +45,32 @@ export async function getProducts({
     skip,
     take,
   });
+}
+
+export async function getProductsCached({
+  query,
+  slug,
+  sort,
+  page = 1,
+  pageSize = 18,
+}: GetProductParams) {
+  const cacheKey = createProductsCacheKey({
+    search: query,
+    categorySlug: slug,
+    sort,
+    page,
+    limit: pageSize,
+  });
+  const cacheTags = createProductsTags({ search: query, categorySlug: slug });
+
+  return unstable_cache(
+    () => getProducts({ query, slug, sort, page, pageSize }),
+    [cacheKey],
+    {
+      tags: cacheTags,
+      revalidate: 3600,
+    }
+  )();
 }
 
 export async function getProductBySlug(slug: string) {
@@ -101,7 +128,7 @@ async function findCartFromCookie(): Promise<CartWithProducts | null> {
     })
   }, 
   [`cart-${cartId}`],
-  { tags: [`cart-${cartId}`] }
+  { tags: [`cart-${cartId}`], revalidate: 3600 }
   )(cartId); // cartId is passed as the first argument to the 1st cb function
 }
 
@@ -170,7 +197,7 @@ export async function addToCart(productId: string, quantity: number = 1) {
     });
   }
 
-  // delete cached cart -> re-render -> cache miss -> fetch fresh data -> cache again
+  // delete cached cart -> re-render -> cache miss -> fetch fresh data -> cache again 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   revalidateTag(`cart-${cart.id}`);
@@ -215,4 +242,47 @@ export async function setProductQuantity(productId: string, quantity: number) {
     console.log("error", e)
     throw new Error("Failed to update cart item quantity")
   }
+}
+
+export async function getProductsCountCached() {
+  return unstable_cache(() => prisma.product.count(), ["products-count"], {
+    tags: ["products"],
+    revalidate: 3600,
+  })();
+}
+
+export async function getCategoryBySlug(slug: string) {
+  return await prisma.category.findUnique({
+    where: { slug },
+    select: { name: true, slug: true },
+  });
+}
+
+export async function getCategoryBySlugCached(slug: string) {
+  return unstable_cache(() => getCategoryBySlug(slug), [`category-${slug}`], {
+    tags: [`category-${slug}`],
+    revalidate: 3600,
+  })();
+}
+
+export async function getCachedCategories() {
+  return unstable_cache(
+        () => {
+            return prisma.category.findMany({
+                select: {
+                    name: true,
+                    slug: true,
+                    id: true
+                },
+                    orderBy: {
+                    name: "asc",
+                },
+            });
+        },
+        ["categories"],
+        {
+            tags: ["categories"],
+            revalidate: 3600,
+        }
+    )();
 }

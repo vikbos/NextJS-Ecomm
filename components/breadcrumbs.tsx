@@ -22,7 +22,6 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                         <BreadcrumbItem>
                             <BreadcrumbLink
                                 href={item.href}
-                                // active={item.active}
                                 aria-current={item.active ? "page" : undefined}
                             >
                                 {item.label}

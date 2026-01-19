@@ -9,6 +9,6 @@ export async function GET() {
         })
     } catch (e) {
         console.log(e)
-        return NextResponse.json({ itemCOunt: 0 }, { status: 500 })
+        return NextResponse.json({ itemCount: 0 }, { status: 500 })
     }
 }

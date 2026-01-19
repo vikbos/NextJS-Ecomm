@@ -2,9 +2,9 @@ import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import Link from "next/link";
-import { categories } from "./navbar";
+import { Category } from "@/generated/prisma/client";
 
-export function MobileNav() {
+export function MobileNav({ categories }: { categories: Category[] }) {
     return (
         <Sheet>
             <SheetTrigger asChild className="md:hidden">
@@ -31,7 +31,7 @@ export function MobileNav() {
                         {categories.map((category) => (
                             <SheetClose asChild key={category.id}>
                                 <Link
-                                    href={category.href}
+                                    href={`/search/${category.slug}`}
                                     className="block py-2 text-sm font-medium"
                                 >
                                     {category.name}
