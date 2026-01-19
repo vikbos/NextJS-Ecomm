@@ -113,7 +113,7 @@ async function findCartFromCookie(): Promise<CartWithProducts | null> {
 
   // return cached data if they are still cached or fetch new data
   return unstable_cache(async (id: string) => {
-    return await prisma.cart.findUnique({
+    return prisma.cart.findUnique({
       where: { id, },
       include: {
         items: {
