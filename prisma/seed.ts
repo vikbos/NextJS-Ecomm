@@ -3,6 +3,13 @@ import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/prisma'
 
 async function main() {
+  console.log("Waking up database...");
+  await prisma.$connect(); // Explicitly start the connection
+  
+  // Optional: small 2-second delay
+  await new Promise(res => setTimeout(res, 2000));
+
+  console.log("Clearing existing data...");
   // 1. Delete items that depend on Products and Carts
   await prisma.orderItem.deleteMany();
   await prisma.cartItem.deleteMany();

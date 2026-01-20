@@ -8,42 +8,42 @@ datasource db {
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
   price       Float
   image       String?
-  slug        String   @unique
-  category    Category @relation(fields: [categoryId], references: [id])
+  slug        String      @unique
   categoryId  String
-  inventory   Int      @default(0)
+  inventory   Int         @default(0)
   cartItems   CartItem[]
   orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  products    Product[]
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  products Product[]
 }
 
 model Cart {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   items     CartItem[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model CartItem {
   id        String   @id @default(cuid())
-  cart      Cart     @relation(fields: [cartId], references: [id])
   cartId    String
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@unique([cartId, productId])
   @@index([cartId])
@@ -54,30 +54,29 @@ model Order {
   id                    String      @id @default(cuid())
   total                 Float
   status                String      @default("pending")
-  items                 OrderItem[]
   stripeSessionId       String?
   stripePaymentIntentId String?
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
   userId                String?
-  user                  User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user                  User?       @relation(fields: [userId], references: [id])
+  items                 OrderItem[]
 }
 
 model OrderItem {
   id        String   @id @default(cuid())
-  order     Order    @relation(fields: [orderId], references: [id])
   orderId   String
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int      @default(1)
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@index([orderId])
   @@index([productId])
 }
-
 
 model User {
   id        String   @id @default(cuid())
