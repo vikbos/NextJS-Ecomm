@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a small E-commerce project built with  [Next.js](https://nextjs.org) / [Auth.js](https://authjs.dev/) / [Prisma](https://www.prisma.io/) / [PostgreSQL](https://www.postgresql.org/) / [Shadcn](https://ui.shadcn.com/) / [Stripe](https://stripe.com/)
 
-## Getting Started
+Project is live on Vercel [here](https://next-js-ecomm-omega.vercel.app/)
 
-First, run the development server:
+## Environment Variables
+
+To run this project, you will need to add the following variables to your .env (Local) or .env.local (Production/Vercel) files:
+
+- <kbd>DATABASE_URL</kbd>: Your pooled database connection string.
+- <kbd>DIRECT_DATABASE_URL</kbd>: Your direct TCP connection string (required for migrations/push).
+- <kbd>AUTH_SECRET</kbd>: Used by Auth.js for session encryption.
+- <kbd>STRIPE_SECRET_KEY</kbd>: Your Stripe API key.
+
+## Local Development
+
+Start development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sync local DB and generate Prisma client
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx prisma db push
+npx prisma generate
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Production & Deployment
 
-## Learn More
+After testing changes locally, push the schema to the live database and update your local types:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx dotenv-cli -e .env.local -- npx prisma db push
+# Update local generated client to match production schema
+npx prisma generate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Once the database is synced, commit and push your code. Vercel will automatically trigger a build, run the postinstall script to regenerate the client on their servers, and deploy the latest version of the main branch.
